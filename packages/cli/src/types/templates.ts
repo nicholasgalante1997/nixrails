@@ -34,6 +34,8 @@ export interface TemplateContext {
   author?: string;
   /** Git author email */
   email?: string;
+  /** Selected databases */
+  databases?: string[];
 }
 
 /**
@@ -66,6 +68,8 @@ export interface PackageTemplateContext extends TemplateContext {
   includeBuild: boolean;
   /** Include tests */
   includeTests: boolean;
+  /** Selected databases (for database package) */
+  databases?: string[];
 }
 
 /**

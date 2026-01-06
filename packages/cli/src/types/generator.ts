@@ -126,6 +126,8 @@ export interface PackageOptions extends GeneratorOptions {
   includeBuild?: boolean;
   /** Include tests */
   includeTests?: boolean;
+  /** Database support (for database package) */
+  databases?: SupportedDatabase[];
 }
 
 /**

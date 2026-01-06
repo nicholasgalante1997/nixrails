@@ -1,0 +1,32 @@
+/**
+ * Build script for {{projectScope}}/database package
+ * Uses Bun.build to bundle the database utilities
+ */
+
+const result = await Bun.build({
+  entrypoints: ['./lib/index.ts'],
+  outdir: './out',
+  target: 'bun',
+  format: 'esm',
+  splitting: false,
+  sourcemap: 'external',
+  minify: false,
+  external: [
+    'pg',
+    'neo4j-driver',
+    'better-sqlite3',
+    'debug',
+    '{{projectScope}}/configs',
+    '{{projectScope}}/logger',
+  ],
+});
+
+if (!result.success) {
+  console.error('Build failed');
+  for (const message of result.logs) {
+    console.error(message);
+  }
+  process.exit(1);
+}
+
+console.log('✓ Database package built successfully');

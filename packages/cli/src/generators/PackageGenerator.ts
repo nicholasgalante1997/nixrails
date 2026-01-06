@@ -99,7 +99,7 @@ export class PackageGenerator extends Generator<PackageOptions> {
   }
 
   private getTemplateContext(): PackageTemplateContext {
-    const { name, scope, type, includeBuild, includeTests } = this.options;
+    const { name, scope, type, includeBuild, includeTests, databases } = this.options;
 
     return {
       projectName: kebabCase(name),
@@ -117,6 +117,7 @@ export class PackageGenerator extends Generator<PackageOptions> {
       packageType: type,
       includeBuild: includeBuild ?? true,
       includeTests: includeTests ?? true,
+      databases: databases || [],
     };
   }
 }

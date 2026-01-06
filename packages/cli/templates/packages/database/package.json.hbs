@@ -1,0 +1,44 @@
+{
+  "name": "{{projectScope}}/database",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Database utilities and connection management for {{projectName}}",
+  "type": "module",
+  "module": "./out/index.js",
+  "types": "./out/lib/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./out/index.js",
+      "types": "./out/lib/index.d.ts",
+      "default": "./out/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build-types": "tsc -p tsconfig.json",
+    "bundle": "bun run build.ts",
+    "build": "bun run bundle && bun run build-types",
+    "check-types": "tsc -p tsconfig.json --noEmit",
+    "clean": "rm -rf out"
+  },
+  "dependencies": {
+    "{{projectScope}}/configs": "workspace:*",
+    "{{projectScope}}/logger": "workspace:*",
+    {{#if (includes databases "postgres")}}
+    "pg": "^8.11.3",
+    "@types/pg": "^8.10.9",
+    {{/if}}
+    {{#if (includes databases "neo4j")}}
+    "neo4j-driver": "^5.15.0",
+    {{/if}}
+    {{#if (includes databases "sqlite3")}}
+    "better-sqlite3": "^9.2.2",
+    "@types/better-sqlite3": "^7.6.8",
+    {{/if}}
+    "debug": "^4.3.4"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^{{typescriptVersion}}"
+  }
+}

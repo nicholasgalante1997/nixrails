@@ -1,0 +1,12 @@
+{
+  "extends": "{{projectScope}}/configs/bun.tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out",
+    "rootDir": "./lib",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  },
+  "include": ["lib/**/*"],
+  "exclude": ["node_modules", "out"]
+}

@@ -1,0 +1,112 @@
+{{#if (includes databases "postgres")}}
+/**
+ * PostgreSQL connection utilities
+ * Provides connection pooling and query helpers
+ */
+
+import pg from 'pg';
+import { Logger } from '{{projectScope}}/logger';
+import type { DatabaseConfig, ConnectionHealth } from './index.js';
+
+const { Pool } = pg;
+const logger = new Logger('database:postgres');
+
+export interface PostgresConfig extends DatabaseConfig {
+  max?: number;
+  idleTimeoutMillis?: number;
+  connectionTimeoutMillis?: number;
+}
+
+let pool: pg.Pool | null = null;
+
+/**
+ * Initialize PostgreSQL connection pool
+ */
+export function initPostgres(config: PostgresConfig): pg.Pool {
+  if (pool) {
+    logger.warn('PostgreSQL pool already initialized');
+    return pool;
+  }
+
+  const {
+    host = process.env.POSTGRES_HOST || 'localhost',
+    port = parseInt(process.env.POSTGRES_PORT || '5432'),
+    database = process.env.POSTGRES_DB || '{{projectName}}_db',
+    user = process.env.POSTGRES_USER || 'postgres',
+    password = process.env.POSTGRES_PASSWORD || 'postgres',
+    max = 20,
+    idleTimeoutMillis = 30000,
+    connectionTimeoutMillis = 2000,
+  } = config;
+
+  pool = new Pool({
+    host,
+    port,
+    database,
+    user,
+    password,
+    max,
+    idleTimeoutMillis,
+    connectionTimeoutMillis,
+  });
+
+  pool.on('error', (err) => {
+    logger.error('Unexpected error on idle PostgreSQL client', err);
+  });
+
+  logger.info(`PostgreSQL pool initialized: ${user}@${host}:${port}/${database}`);
+
+  return pool;
+}
+
+/**
+ * Get PostgreSQL pool instance
+ */
+export function getPostgresPool(): pg.Pool {
+  if (!pool) {
+    throw new Error('PostgreSQL pool not initialized. Call initPostgres() first.');
+  }
+  return pool;
+}
+
+/**
+ * Check PostgreSQL connection health
+ */
+export async function checkPostgresHealth(): Promise<ConnectionHealth> {
+  if (!pool) {
+    return { connected: false, error: 'Pool not initialized' };
+  }
+
+  try {
+    const start = Date.now();
+    const client = await pool.connect();
+    await client.query('SELECT 1');
+    client.release();
+    const latency = Date.now() - start;
+
+    return { connected: true, latency };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return { connected: false, error: errorMessage };
+  }
+}
+
+/**
+ * Close PostgreSQL connection pool
+ */
+export async function closePostgres(): Promise<void> {
+  if (pool) {
+    await pool.end();
+    pool = null;
+    logger.info('PostgreSQL pool closed');
+  }
+}
+
+/**
+ * Execute a query with the pool
+ */
+export async function query<T = any>(text: string, params?: any[]): Promise<pg.QueryResult<T>> {
+  const pool = getPostgresPool();
+  return pool.query<T>(text, params);
+}
+{{/if}}

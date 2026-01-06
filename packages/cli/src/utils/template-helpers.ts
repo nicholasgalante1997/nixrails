@@ -100,8 +100,18 @@ export function registerHelpers(handlebars: typeof import('handlebars')): void {
   });
 
   // Includes helper (check if array includes value)
-  handlebars.registerHelper('includes', function (this: any, array: any[], value: any, options: any) {
-    if (array && array.includes(value)) {
+  // Can be used as SubExpression: {{#if (includes array value)}}
+  // Or as block helper: {{#includes array value}}
+  handlebars.registerHelper('includes', function (this: any, array: any[], value: any, options?: any) {
+    const included = array && Array.isArray(array) && array.includes(value);
+
+    // SubExpression usage (returns boolean) - when called without block
+    if (!options || typeof options.fn !== 'function') {
+      return included;
+    }
+
+    // Block helper usage
+    if (included) {
       return options.fn(this);
     }
     return options.inverse ? options.inverse(this) : '';

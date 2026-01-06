@@ -1,0 +1,71 @@
+# Database services for {{projectName}}
+
+services:
+  {{#if (includes databases "postgres")}}
+  postgres:
+    image: postgres:16-alpine
+    container_name: {{projectName}}-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: {{snakeCase projectName}}_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - {{projectName}}
+  {{/if}}
+
+  {{#if (includes databases "neo4j")}}
+  neo4j:
+    image: neo4j:5.15-community
+    container_name: {{projectName}}-neo4j
+    restart: unless-stopped
+    environment:
+      NEO4J_AUTH: neo4j/password
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_security_procedures_unrestricted: apoc.*
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:7474"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    networks:
+      - {{projectName}}
+  {{/if}}
+
+  {{#if (includes databases "sqlite3")}}
+  # SQLite is file-based and doesn't require a separate service
+  # Database file will be stored in: ./data/{{projectName}}.db
+  {{/if}}
+
+volumes:
+  {{#if (includes databases "postgres")}}
+  postgres_data:
+    driver: local
+  {{/if}}
+  {{#if (includes databases "neo4j")}}
+  neo4j_data:
+    driver: local
+  neo4j_logs:
+    driver: local
+  {{/if}}
+
+networks:
+  {{projectName}}:
+    external: true

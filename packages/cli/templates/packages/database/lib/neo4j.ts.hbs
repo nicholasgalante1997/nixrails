@@ -1,0 +1,119 @@
+{{#if (includes databases "neo4j")}}
+/**
+ * Neo4j connection utilities
+ * Provides driver instance and session management
+ */
+
+import neo4j, { Driver, Session } from 'neo4j-driver';
+import { Logger } from '{{projectScope}}/logger';
+import type { DatabaseConfig, ConnectionHealth } from './index.js';
+
+const logger = new Logger('database:neo4j');
+
+export interface Neo4jConfig extends DatabaseConfig {
+  maxConnectionPoolSize?: number;
+  connectionAcquisitionTimeout?: number;
+}
+
+let driver: Driver | null = null;
+
+/**
+ * Initialize Neo4j driver
+ */
+export function initNeo4j(config: Neo4jConfig = {}): Driver {
+  if (driver) {
+    logger.warn('Neo4j driver already initialized');
+    return driver;
+  }
+
+  const {
+    uri = process.env.NEO4J_URI || 'bolt://localhost:7687',
+    user = process.env.NEO4J_USER || 'neo4j',
+    password = process.env.NEO4J_PASSWORD || 'password',
+    maxConnectionPoolSize = 50,
+    connectionAcquisitionTimeout = 60000,
+  } = config;
+
+  driver = neo4j.driver(
+    uri,
+    neo4j.auth.basic(user, password),
+    {
+      maxConnectionPoolSize,
+      connectionAcquisitionTimeout,
+    }
+  );
+
+  logger.info(`Neo4j driver initialized: ${uri}`);
+
+  return driver;
+}
+
+/**
+ * Get Neo4j driver instance
+ */
+export function getNeo4jDriver(): Driver {
+  if (!driver) {
+    throw new Error('Neo4j driver not initialized. Call initNeo4j() first.');
+  }
+  return driver;
+}
+
+/**
+ * Create a new Neo4j session
+ */
+export function createSession(database?: string): Session {
+  const driver = getNeo4jDriver();
+  return driver.session({ database });
+}
+
+/**
+ * Check Neo4j connection health
+ */
+export async function checkNeo4jHealth(): Promise<ConnectionHealth> {
+  if (!driver) {
+    return { connected: false, error: 'Driver not initialized' };
+  }
+
+  const session = driver.session();
+  try {
+    const start = Date.now();
+    await session.run('RETURN 1');
+    const latency = Date.now() - start;
+
+    return { connected: true, latency };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return { connected: false, error: errorMessage };
+  } finally {
+    await session.close();
+  }
+}
+
+/**
+ * Close Neo4j driver
+ */
+export async function closeNeo4j(): Promise<void> {
+  if (driver) {
+    await driver.close();
+    driver = null;
+    logger.info('Neo4j driver closed');
+  }
+}
+
+/**
+ * Execute a Cypher query
+ */
+export async function runQuery<T = any>(
+  cypher: string,
+  params?: Record<string, any>,
+  database?: string
+): Promise<T[]> {
+  const session = createSession(database);
+  try {
+    const result = await session.run(cypher, params);
+    return result.records.map(record => record.toObject() as T);
+  } finally {
+    await session.close();
+  }
+}
+{{/if}}

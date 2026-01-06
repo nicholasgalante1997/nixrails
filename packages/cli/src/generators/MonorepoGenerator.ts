@@ -7,6 +7,7 @@ import path from 'path';
 import { Generator } from './base/Generator.js';
 import { AppGenerator } from './AppGenerator.js';
 import { PackageGenerator } from './PackageGenerator.js';
+import { DockerGenerator } from './DockerGenerator.js';
 import type {
   MonorepoOptions,
   GeneratorResult,
@@ -40,6 +41,11 @@ export class MonorepoGenerator extends Generator<MonorepoOptions> {
 
       // Generate apps based on type
       await this.generateApps();
+
+      // Generate Docker configuration if requested
+      if (this.options.includeDocker) {
+        await this.generateDockerConfigs();
+      }
 
       // Initialize git repository
       if (!this.options.skipGit) {
@@ -173,7 +179,7 @@ export class MonorepoGenerator extends Generator<MonorepoOptions> {
   }
 
   private getPackagesToGenerate() {
-    const { type, scope } = this.options;
+    const { scope, databases } = this.options;
     const packages = [];
 
     // Always include @configs
@@ -188,9 +194,15 @@ export class MonorepoGenerator extends Generator<MonorepoOptions> {
     // Always include @logger
     packages.push({ name: 'logger', type: 'logger' as const, scope, includeBuild: true });
 
-    // Add @database for full-stack
-    if (type === 'full-stack') {
-      packages.push({ name: 'database', type: 'database' as const, scope, includeBuild: true });
+    // Add @database if databases are specified
+    if (databases && databases.length > 0) {
+      packages.push({
+        name: 'database',
+        type: 'database' as const,
+        scope,
+        includeBuild: true,
+        databases
+      });
     }
 
     return packages;
@@ -226,6 +238,24 @@ export class MonorepoGenerator extends Generator<MonorepoOptions> {
     return apps;
   }
 
+  private async generateDockerConfigs(): Promise<void> {
+    this.logger.info('Generating Docker configuration...');
+
+    const generator = new DockerGenerator({
+      projectName: this.options.name,
+      scope: this.options.scope,
+      databases: this.options.databases,
+      includeWeb: true,
+      bunVersion: this.options.bunVersion,
+      outputPath: this.getProjectPath(),
+      dryRun: this.options.dryRun,
+      force: this.options.force,
+      verbose: this.options.verbose,
+    });
+
+    await generator.generate();
+  }
+
   private async initializeGit(): Promise<void> {
     const projectPath = this.getProjectPath();
 
@@ -253,7 +283,7 @@ export class MonorepoGenerator extends Generator<MonorepoOptions> {
   }
 
   private async getTemplateContext(): Promise<TemplateContext> {
-    const { name, scope, bunVersion, nodeVersion } = this.options;
+    const { name, scope, bunVersion, nodeVersion, databases } = this.options;
 
     return {
       projectName: kebabCase(name),
@@ -269,7 +299,7 @@ export class MonorepoGenerator extends Generator<MonorepoOptions> {
       date: getCurrentDate(),
       author: await getGitUserName(),
       email: await getGitUserEmail(),
-      databases: this.options.databases,
+      databases: databases || [],
     } as TemplateContext;
   }
 

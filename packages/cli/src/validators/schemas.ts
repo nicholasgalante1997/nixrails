@@ -46,6 +46,11 @@ const versionSchema = z
   .regex(/^\d+\.\d+\.\d+$/, 'Version must follow semantic versioning (e.g., 1.3.5)');
 
 /**
+ * Supported database types
+ */
+const databaseSchema = z.enum(['postgres', 'neo4j', 'sqlite3', 'mysql', 'edgedb']);
+
+/**
  * Monorepo generator options schema
  */
 export const monorepoOptionsSchema = baseGeneratorOptionsSchema.extend({
@@ -57,7 +62,7 @@ export const monorepoOptionsSchema = baseGeneratorOptionsSchema.extend({
   includeDocker: z.boolean().optional().default(false),
   includeCI: z.boolean().optional().default(false),
   ciProvider: z.enum(['github', 'gitlab']).optional(),
-  databases: z.array(z.enum(['postgres', 'neo4j'])).optional(),
+  databases: z.array(databaseSchema).optional(),
   skipInstall: z.boolean().optional().default(false),
   skipGit: z.boolean().optional().default(false),
 });
@@ -80,14 +85,18 @@ export const packageOptionsSchema = baseGeneratorOptionsSchema.extend({
   scope: scopeSchema,
   includeBuild: z.boolean().optional().default(true),
   includeTests: z.boolean().optional().default(true),
+  databases: z.array(databaseSchema).optional(),
 });
 
 /**
  * Docker generator options schema
  */
 export const dockerOptionsSchema = baseGeneratorOptionsSchema.extend({
-  services: z.array(z.enum(['postgres', 'neo4j', 'redis'])).optional(),
+  projectName: projectNameSchema,
+  scope: scopeSchema,
+  databases: z.array(databaseSchema).optional(),
   includeWeb: z.boolean().optional().default(true),
+  bunVersion: versionSchema,
 });
 
 /**
