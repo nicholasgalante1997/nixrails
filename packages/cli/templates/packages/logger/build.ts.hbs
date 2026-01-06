@@ -1,0 +1,26 @@
+#!/usr/bin/env bun
+
+/**
+ * Build script for {{projectScope}}/logger
+ */
+
+const result = await Bun.build({
+  entrypoints: ['lib/index.ts'],
+  format: 'esm',
+  target: 'bun',
+  outdir: './out',
+  splitting: false,
+  sourcemap: 'linked',
+  minify: false,
+  external: ['chalk']
+});
+
+if (!result.success) {
+  console.error('Build failed:');
+  for (const message of result.logs) {
+    console.error(message);
+  }
+  process.exit(1);
+}
+
+console.log('✓ Build completed');

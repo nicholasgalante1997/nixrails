@@ -1,0 +1,29 @@
+{
+  "name": "@nixrails/root",
+  "version": "0.1.0",
+  "private": true,
+  "description": "NixRails - Scaffolding engine for Bun Turborepo workspaces",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "test": "turbo test",
+    "lint": "turbo lint",
+    "clean": "turbo clean",
+    "check-types": "turbo check-types"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^25.0.0",
+    "turbo": "^2.6.1",
+    "typescript": "^5.5.4"
+  },
+  "engines": {
+    "bun": ">=1.3.2",
+    "node": ">=24.6.0"
+  },
+  "packageManager": "bun@1.3.5"
+}

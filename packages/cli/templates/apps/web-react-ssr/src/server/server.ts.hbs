@@ -1,0 +1,73 @@
+/**
+ * {{projectScope}}/web - Bun HTTP Server
+ * Server-side rendering with React 19
+ */
+
+import { renderToString } from 'react-dom/server';
+import { createElement } from 'react';
+import App from '../web/App';
+
+const PORT = parseInt(process.env.PORT || '3000', 10);
+
+/**
+ * Generate HTML document with SSR content
+ */
+function generateHTML(content: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{projectName}}</title>
+    <link rel="stylesheet" href="/css/index.css">
+  </head>
+  <body>
+    <div id="root">${content}</div>
+    <script type="module" src="/browser.js"></script>
+  </body>
+</html>`;
+}
+
+/**
+ * Create and start the Bun HTTP server
+ */
+export function createServer() {
+  return Bun.serve({
+    port: PORT,
+    async fetch(req) {
+      const url = new URL(req.url);
+
+      // Serve static files
+      if (url.pathname.startsWith('/css/') || url.pathname.startsWith('/assets/')) {
+        const file = Bun.file(`./public${url.pathname}`);
+        if (await file.exists()) {
+          return new Response(file);
+        }
+      }
+
+      // Serve browser bundle
+      if (url.pathname === '/browser.js') {
+        const file = Bun.file('./out/browser.js');
+        if (await file.exists()) {
+          return new Response(file, {
+            headers: { 'Content-Type': 'application/javascript' },
+          });
+        }
+      }
+
+      // Server-side render React app
+      try {
+        const app = createElement(App);
+        const html = renderToString(app);
+        const document = generateHTML(html);
+
+        return new Response(document, {
+          headers: { 'Content-Type': 'text/html' },
+        });
+      } catch (error) {
+        console.error('SSR Error:', error);
+        return new Response('Internal Server Error', { status: 500 });
+      }
+    },
+  });
+}

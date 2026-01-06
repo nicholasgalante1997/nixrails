@@ -1,0 +1,17 @@
+/**
+ * {{projectScope}}/web - Browser entry point
+ * Hydrates the React app on the client side
+ */
+
+import { hydrateRoot } from 'react-dom/client';
+import { createElement } from 'react';
+import App from '../App';
+
+const root = document.getElementById('root');
+
+if (root) {
+  const app = createElement(App);
+  hydrateRoot(root, app);
+} else {
+  console.error('Root element not found');
+}

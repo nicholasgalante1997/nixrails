@@ -1,0 +1,51 @@
+# mise-en-place configuration for NixRails
+# https://mise.jdx.dev/configuration.html
+
+[tools]
+bun = { version = "1.3.5", os = ["linux", "macos"] }
+node = { version = "25", os = ["linux", "macos"] }
+
+[env]
+_.file = [".env"]
+_.path = ["{{config_root}}/node_modules/.bin"]
+
+[tasks.install]
+description = "Installs all project dependencies"
+run = "bun install --frozen-lockfile"
+
+[tasks.test]
+description = "Runs the test suite"
+run = "bun run test"
+depends = ["install"]
+
+[tasks.lint]
+description = "Runs the linter"
+run = "bun run lint"
+depends = ["install"]
+
+[tasks.build]
+description = "Builds the project"
+run = "bun run build"
+depends = ["install"]
+
+[tasks.dev]
+description = "Starts development mode"
+run = "bun run dev"
+depends = ["install"]
+
+[tasks.clean]
+description = "Cleans build artifacts"
+run = "bun run clean"
+
+[tasks.check-types]
+description = "Type-check the project"
+run = "bun run check-types"
+depends = ["install"]
+
+[tasks.sync-readme]
+description = "Sync the local turborepo root README.md to the release package '@nixrails/cli'"
+run = """
+rm ./packages/cli/README.md
+cp ./README.md ./packages/cli/README.md
+echo "Finished copying READMEs!"
+"""

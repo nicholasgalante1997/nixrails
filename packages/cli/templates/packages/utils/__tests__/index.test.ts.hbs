@@ -1,0 +1,39 @@
+import { describe, test, expect } from 'bun:test';
+import { sleep, isDefined, safeJsonParse } from '../lib/index';
+
+describe('{{projectScope}}/utils', () => {
+  describe('sleep', () => {
+    test('should pause execution', async () => {
+      const start = Date.now();
+      await sleep(100);
+      const elapsed = Date.now() - start;
+      expect(elapsed).toBeGreaterThanOrEqual(100);
+    });
+  });
+
+  describe('isDefined', () => {
+    test('should return true for defined values', () => {
+      expect(isDefined(0)).toBe(true);
+      expect(isDefined('')).toBe(true);
+      expect(isDefined(false)).toBe(true);
+      expect(isDefined([])).toBe(true);
+    });
+
+    test('should return false for null or undefined', () => {
+      expect(isDefined(null)).toBe(false);
+      expect(isDefined(undefined)).toBe(false);
+    });
+  });
+
+  describe('safeJsonParse', () => {
+    test('should parse valid JSON', () => {
+      const result = safeJsonParse<{ foo: string }>('{"foo":"bar"}');
+      expect(result).toEqual({ foo: 'bar' });
+    });
+
+    test('should return null for invalid JSON', () => {
+      const result = safeJsonParse('invalid json');
+      expect(result).toBeNull();
+    });
+  });
+});

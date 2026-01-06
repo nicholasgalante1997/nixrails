@@ -1,0 +1,52 @@
+/**
+ * {{projectScope}}/web - Root React component
+ */
+
+import { useState } from 'react';
+
+export default function App() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div className="app">
+      <header className="app-header">
+        <h1>Welcome to {{projectName}}</h1>
+        <p>Built with React 19 Server-Side Rendering + Bun</p>
+      </header>
+
+      <main className="app-main">
+        <div className="counter">
+          <p>Counter: {count}</p>
+          <button onClick={() => setCount(count + 1)}>
+            Increment
+          </button>
+          <button onClick={() => setCount(count - 1)}>
+            Decrement
+          </button>
+          <button onClick={() => setCount(0)}>
+            Reset
+          </button>
+        </div>
+
+        <div className="info">
+          <h2>Get Started</h2>
+          <p>Edit <code>src/web/App.tsx</code> and save to see changes.</p>
+
+          <h3>Available Packages</h3>
+          <ul>
+            <li><code>{{projectScope}}/utils</code> - Utility functions</li>
+            <li><code>{{projectScope}}/types</code> - TypeScript types</li>
+            <li><code>{{projectScope}}/logger</code> - Logging utilities</li>
+          </ul>
+
+          <h3>Learn More</h3>
+          <ul>
+            <li><a href="https://react.dev" target="_blank" rel="noopener noreferrer">React Documentation</a></li>
+            <li><a href="https://bun.sh/docs" target="_blank" rel="noopener noreferrer">Bun Documentation</a></li>
+            <li><a href="https://turbo.build/repo/docs" target="_blank" rel="noopener noreferrer">Turborepo Documentation</a></li>
+          </ul>
+        </div>
+      </main>
+    </div>
+  );
+}

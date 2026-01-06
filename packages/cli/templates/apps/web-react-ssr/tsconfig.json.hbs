@@ -1,0 +1,13 @@
+{
+  "extends": "{{projectScope}}/configs/typescript/react.tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./",
+    "outDir": "./out",
+    "noEmit": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "out", "public"]
+}

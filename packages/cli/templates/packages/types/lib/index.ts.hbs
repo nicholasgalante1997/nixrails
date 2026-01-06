@@ -1,0 +1,47 @@
+/**
+ * {{projectScope}}/types
+ * Shared TypeScript type definitions
+ */
+
+/**
+ * Common result type for operations that can fail
+ */
+export type Result<T, E = Error> =
+  | { success: true; data: T }
+  | { success: false; error: E };
+
+/**
+ * Make all properties of T optional recursively
+ */
+export type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
+
+/**
+ * Make all properties of T required recursively
+ */
+export type DeepRequired<T> = {
+  [P in keyof T]-?: T[P] extends object ? DeepRequired<T[P]> : T[P];
+};
+
+/**
+ * Extract keys from T where the value type is of type V
+ */
+export type KeysOfType<T, V> = {
+  [K in keyof T]: T[K] extends V ? K : never;
+}[keyof T];
+
+/**
+ * Async function type
+ */
+export type AsyncFunction<Args extends any[] = any[], Return = any> = (
+  ...args: Args
+) => Promise<Return>;
+
+/**
+ * JSON-serializable types
+ */
+export type JsonPrimitive = string | number | boolean | null;
+export type JsonValue = JsonPrimitive | JsonObject | JsonArray;
+export type JsonObject = { [key: string]: JsonValue };
+export type JsonArray = JsonValue[];

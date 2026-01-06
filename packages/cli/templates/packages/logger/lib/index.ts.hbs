@@ -1,0 +1,74 @@
+/**
+ * {{projectScope}}/logger
+ * Logging utilities with colored output
+ */
+
+import chalk from 'chalk';
+
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+export interface LoggerOptions {
+  name?: string;
+  level?: LogLevel;
+}
+
+const LOG_LEVELS: Record<LogLevel, number> = {
+  debug: 0,
+  info: 1,
+  warn: 2,
+  error: 3,
+};
+
+export class Logger {
+  private name: string;
+  private level: LogLevel;
+
+  constructor(options: LoggerOptions = {}) {
+    this.name = options.name || 'App';
+    this.level = options.level || 'info';
+  }
+
+  private shouldLog(level: LogLevel): boolean {
+    return LOG_LEVELS[level] >= LOG_LEVELS[this.level];
+  }
+
+  private formatMessage(level: LogLevel, message: string): string {
+    const timestamp = new Date().toISOString();
+    const prefix = `[${timestamp}] [${this.name}] [${level.toUpperCase()}]`;
+    return `${prefix} ${message}`;
+  }
+
+  debug(message: string): void {
+    if (this.shouldLog('debug')) {
+      console.log(chalk.gray(this.formatMessage('debug', message)));
+    }
+  }
+
+  info(message: string): void {
+    if (this.shouldLog('info')) {
+      console.log(chalk.blue(this.formatMessage('info', message)));
+    }
+  }
+
+  warn(message: string): void {
+    if (this.shouldLog('warn')) {
+      console.warn(chalk.yellow(this.formatMessage('warn', message)));
+    }
+  }
+
+  error(message: string, error?: Error): void {
+    if (this.shouldLog('error')) {
+      console.error(chalk.red(this.formatMessage('error', message)));
+      if (error) {
+        console.error(chalk.red(error.stack || error.message));
+      }
+    }
+  }
+}
+
+/**
+ * Create a new logger instance
+ */
+export function createLogger(name: string, level?: LogLevel): Logger {
+  return new Logger({ name, level });
+}

@@ -1,0 +1,12 @@
+/**
+ * {{projectScope}}/web - Server entry point
+ * Starts the Bun HTTP server for React SSR
+ */
+
+import { createServer } from './server/server';
+
+const PORT = process.env.PORT || 3000;
+
+const server = createServer();
+
+console.log(`🚀 Server running at http://localhost:${PORT}`);

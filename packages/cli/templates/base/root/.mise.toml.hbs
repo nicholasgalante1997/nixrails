@@ -1,0 +1,48 @@
+# mise-en-place configuration
+# https://mise.jdx.dev/configuration.html
+
+[tools]
+bun = { version = "{{bunVersion}}", os = ["linux", "macos"] }
+node = { version = "{{nodeVersion}}", os = ["linux", "macos"] }
+
+[env]
+_.file = [".env"]
+_.path = ["\{{config_root}}/node_modules/.bin"]
+
+[tasks.install]
+description = "Installs all project dependencies"
+run = "bun install --frozen-lockfile"
+
+[tasks.test]
+description = "Runs the test suite"
+run = "bun run test"
+depends = ["install"]
+
+[tasks.lint]
+description = "Runs the linter"
+run = "bun run lint"
+depends = ["install"]
+
+[tasks.build]
+description = "Builds the project"
+run = "bun run build"
+depends = ["install"]
+
+[tasks.start]
+description = "Starts the application"
+run = "bun run start"
+depends = ["build"]
+
+[tasks.dev]
+description = "Starts the application in development mode"
+run = "bun run dev"
+depends = ["install"]
+
+[tasks.clean]
+description = "Cleans the project build artifacts"
+run = "bun run clean"
+
+[tasks.check-types]
+description = "Type-check the project"
+run = "bun run check-types"
+depends = ["install"]
